@@ -3,780 +3,509 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>McLeodganj Trip Planner - Complete Codebase</title>
+    <title>McLeodganj Trip Planner</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FIX 1: Load React and Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- FIX 2: Recharts needs prop-types -->
+    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.js"></script>
+    
+    <!-- FIX 3: Load Recharts before Babel starts processing the script -->
+    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+    
+    <!-- Load Babel AFTER all libraries it needs to reference -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons (We will handle icon loading inside the Babel script for robustness) -->
+    <!-- The previous 'module' script block caused a timing conflict with Babel. -->
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        /* Custom styles, overriding the default font and ensuring full-screen layout */
         body {
-            font-family: 'Monaco', 'Menlo', monospace;
-            background: linear-gradient(135deg, #f5f3ff 0%, #fff5f7 100%);
-            color: #333;
-            line-height: 1.5;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #EC699C 0%, #C2185B 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .nav-tabs {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+            min-height: 100vh;
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #EC699C;
-            overflow-x: auto;
-            flex-wrap: wrap;
-        }
-        
-        .nav-tab {
-            padding: 15px 20px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 0.95em;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s;
-            white-space: nowrap;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-        }
-        
-        .nav-tab:hover {
-            background: #f0f0f0;
-            color: #EC699C;
-        }
-        
-        .nav-tab.active {
-            color: #EC699C;
-            border-bottom-color: #EC699C;
-            background: white;
-        }
-        
-        .content {
-            display: none;
-            padding: 30px;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-        
-        .content.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .code-block {
-            background: #f5f5f5;
-            border-left: 4px solid #EC699C;
+            justify-content: center;
+            align-items: flex-start;
             padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.9em;
         }
-        
-        .code-block pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        
-        .code-block code {
-            color: #d73a49;
-            font-family: 'Monaco', monospace;
-        }
-        
-        .section-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #EC699C;
-            margin: 30px 0 15px 0;
-            border-bottom: 2px solid #EC699C;
-            padding-bottom: 10px;
-        }
-        
-        .file-path {
-            color: #666;
-            font-size: 0.9em;
-            font-style: italic;
-            margin-bottom: 10px;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #fff5f7 0%, #f5f0ff 100%);
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #EC699C;
-        }
-        
-        .stat-card h3 {
-            color: #EC699C;
-            font-size: 1em;
-            margin-bottom: 8px;
-        }
-        
-        .stat-card p {
-            color: #333;
-            font-size: 1.3em;
-            font-weight: bold;
-        }
-        
-        .footer {
-            background: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            color: #666;
-            border-top: 1px solid #eee;
-            margin-top: 30px;
-        }
-        
-        table {
+        #root {
             width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+            max-width: 480px; /* Constrain the app width for mobile-first feel */
         }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        /* Custom scrollbar for ScrollArea */
+        .custom-scroll-area::-webkit-scrollbar {
+            width: 6px;
         }
-        
-        th {
-            background: #f5f5f5;
-            color: #EC699C;
-            font-weight: bold;
+        .custom-scroll-area::-webkit-scrollbar-thumb {
+            background-color: #EC699C;
+            border-radius: 3px;
         }
-        
-        tr:hover {
-            background: #f9f9f9;
+        .custom-scroll-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
         }
-        
-        .endpoint {
-            background: #e8f5e9;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 4px;
-            border-left: 4px solid #4caf50;
-            font-family: monospace;
-        }
-        
-        .endpoint.post { border-left-color: #2196f3; background: #e3f2fd; }
-        .endpoint.put { border-left-color: #ff9800; background: #fff3e0; }
-        .endpoint.delete { border-left-color: #f44336; background: #ffebee; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌸 McLeodganj Romantic Trip Planner 🌸</h1>
-            <p>Complete Codebase Documentation</p>
-        </div>
-        
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('overview')">Overview</button>
-            <button class="nav-tab" onclick="showTab('frontend')">Frontend</button>
-            <button class="nav-tab" onclick="showTab('backend')">Backend</button>
-            <button class="nav-tab" onclick="showTab('schema')">Schema</button>
-            <button class="nav-tab" onclick="showTab('api')">API Routes</button>
-            <button class="nav-tab" onclick="showTab('config')">Configuration</button>
-            <button class="nav-tab" onclick="showTab('structure')">Project Structure</button>
-        </div>
-        
-        <!-- OVERVIEW TAB -->
-        <div id="overview" class="content active">
-            <h2 class="section-title">📊 Project Overview</h2>
-            
-            <div class="stats">
-                <div class="stat-card">
-                    <h3>Framework</h3>
-                    <p>React 18 + Express</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Database</h3>
-                    <p>PostgreSQL + Drizzle ORM</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Styling</h3>
-                    <p>Tailwind CSS + Shadcn/ui</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Deploy</h3>
-                    <p>Replit + Neon Database</p>
-                </div>
-            </div>
-            
-            <h2 class="section-title">🎯 Key Features</h2>
-            <ul style="margin: 20px 20px; font-size: 1.05em; line-height: 2;">
-                <li>✅ <strong>Interactive Leaflet Map</strong> - McLeodganj destination visualization</li>
-                <li>✅ <strong>Real-time Countdown</strong> - Live trip timer with day tracking</li>
-                <li>✅ <strong>7-Tab Dashboard</strong> - Dashboard, Notes, Checklist, Messages, Randomizer, Diary, Expenses</li>
-                <li>✅ <strong>Persistent Expense Tracking</strong> - Add, edit, delete expenses with category-based charts</li>
-                <li>✅ <strong>Shared Notes</strong> - Collaborative note-taking for the couple</li>
-                <li>✅ <strong>Daily Checklist</strong> - Pre-trip and daily checklists</li>
-                <li>✅ <strong>Private Messages</strong> - Cross-device messaging between Reh & Sim</li>
-                <li>✅ <strong>Memories Timeline</strong> - Editable, deletable memory entries</li>
-                <li>✅ <strong>Expense Analytics</strong> - Bar charts and pie charts with color-coded categories</li>
-                <li>✅ <strong>PDF Export</strong> - Export diary entries and checklists</li>
-                <li>✅ <strong>Dark Mode Support</strong> - Theme toggle for comfort</li>
-                <li>✅ <strong>Real-time Data Sync</strong> - React Query with automatic cache invalidation</li>
-            </ul>
-            
-            <h2 class="section-title">🎨 Design System</h2>
-            <p style="margin: 20px;">
-                <strong>Color Palette:</strong><br>
-                Primary: Deep Rose (#EC699C) - Romantic energy<br>
-                Secondary: Warm Gold (#F59E0B) - Celebration<br>
-                Accent: Lavender (#C084FC) - Comfort<br>
-                Background: Cream/Pink tints - Welcoming atmosphere
-            </p>
-            
-            <h2 class="section-title">📅 Trip Details</h2>
-            <table>
-                <tr>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Description</th>
-                </tr>
-                <tr>
-                    <td>Dec 25</td>
-                    <td>Chandigarh</td>
-                    <td>Departure day</td>
-                </tr>
-                <tr>
-                    <td>Dec 26</td>
-                    <td>En Route</td>
-                    <td>5-6 hour journey to Dharamshala</td>
-                </tr>
-                <tr>
-                    <td>Dec 27-31</td>
-                    <td>McLeodganj</td>
-                    <td>Main stay - 5 days of romantic exploration</td>
-                </tr>
-            </table>
-        </div>
-        
-        <!-- FRONTEND TAB -->
-        <div id="frontend" class="content">
-            <h2 class="section-title">⚛️ Frontend Architecture</h2>
-            
-            <h3 style="margin-top: 20px; color: #333;">Client Directory Structure</h3>
-            <div class="code-block">
-                <pre>client/src/
-├── App.tsx                    # Main app router & provider setup
-├── main.tsx                   # React entry point
-├── index.css                  # Theme colors & styles
-├── pages/
-│   └── home.tsx              # Main dashboard page
-├── components/
-│   ├── DashboardLayout.tsx    # 7-tab dashboard container
-│   ├── ExpenseCalculator.tsx  # Expense input & charts
-│   ├── ExpenseTracker.tsx     # Expense summary table
-│   ├── MemoriesTimeline.tsx   # Memory entries with edit/delete
-│   ├── SharedNotes.tsx        # Collaborative notes
-│   ├── DailyChecklist.tsx     # Checklist management
-│   ├── PrivateMessages.tsx    # Cross-device messaging
-│   ├── RandomizerWheel.tsx    # Activity/food randomizer
-│   ├── LiveTripDashboard.tsx  # Real-time trip overview
-│   ├── DiaryExport.tsx        # PDF export functionality
-│   ├── RatingSystem.tsx       # Destination ratings
-│   └── ui/                    # Shadcn UI components
-├── lib/
-│   ├── queryClient.ts         # React Query setup
-│   └── localStorage.ts        # Local storage utilities
-├── hooks/
-│   └── use-toast.ts           # Toast notifications
-└── contexts/
-    └── ThemeContext.tsx       # Dark mode provider</pre>
-            </div>
-            
-            <h3 style="margin-top: 20px; color: #333;">App.tsx - Root Component</h3>
-            <div class="code-block">
-                <pre>import { Switch, Route } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import Home from "@/pages/home";
+    <div id="root"></div>
 
-function Router() {
-  return (
-    &lt;Switch&gt;
-      &lt;Route path="/" component={Home} /&gt;
-    &lt;/Switch&gt;
-  );
-}
+    <script type="text/babel">
+        // ======================================================================
+        // 1. UTILITY AND HOOKS (Replacing backend, queryClient, and contexts)
+        // ======================================================================
+        const { useState, useEffect, useCallback, useMemo } = React;
+        
+        // FIX: Recharts is now correctly defined globally by the script tag
+        const { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend } = window.Recharts;
+        
+        // --- Lucide Icons Import Simulation ---
+        // We load them via an immediate script to make them available to Babel's scope
+        const {
+            DollarSign,
+            TrendingUp,
+            Plus,
+            Trash2,
+            X,
+            AlertCircle,
+            CheckCircle // Needed for the toast logic
+        } = window.Lucide || { // Ensure default icons if Lucide module fails
+            DollarSign: () => <svg className="w-6 h-6" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-4a2 2 0 100 4h1a2 2 0 110 4h-4"/></svg>,
+            TrendingUp: () => <svg className="w-6 h-6" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+            Plus: (props) => <svg {...props} viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+            Trash2: (props) => <svg {...props} viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M14 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>,
+            X: () => <svg className="w-5 h-5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            AlertCircle: () => <svg className="w-5 h-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+            CheckCircle: () => <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        };
 
-function App() {
-  return (
-    &lt;QueryClientProvider client={queryClient}&gt;
-      &lt;ThemeProvider&gt;
-        &lt;Toaster /&gt;
-        &lt;Router /&gt;
-      &lt;/ThemeProvider&gt;
-    &lt;/QueryClientProvider&gt;
-  );
-}</pre>
-            </div>
-            
-            <h3 style="margin-top: 20px; color: #333;">Key Features</h3>
-            <ul style="margin: 15px 20px; line-height: 1.8;">
-                <li>📍 <strong>Wouter</strong> - Lightweight client-side routing</li>
-                <li>🎯 <strong>React Query v5</strong> - Server state management & automatic caching</li>
-                <li>🎨 <strong>Tailwind CSS</strong> - Utility-first styling</li>
-                <li>🧩 <strong>Shadcn/ui</strong> - Pre-built, customizable components</li>
-                <li>📊 <strong>Recharts</strong> - Beautiful data visualizations</li>
-                <li>🗺️ <strong>Leaflet + React-Leaflet</strong> - Interactive maps</li>
-                <li>📝 <strong>React Hook Form</strong> - Efficient form handling</li>
-                <li>🎭 <strong>Next-themes</strong> - Dark mode support</li>
-            </ul>
-        </div>
-        
-        <!-- BACKEND TAB -->
-        <div id="backend" class="content">
-            <h2 class="section-title">🖥️ Backend Architecture</h2>
-            
-            <h3 style="margin-top: 20px; color: #333;">Server Directory Structure</h3>
-            <div class="code-block">
-                <pre>server/
-├── index-dev.ts          # Development server (Vite HMR)
-├── index-prod.ts         # Production server (bundled)
-├── app.ts                # Express app configuration
-├── routes.ts             # API route definitions
-├── storage.ts            # Database operations (MemStorage + Drizzle)
-└── db.ts                 # PostgreSQL connection setup
+        /**
+         * Custom hook for Local Storage persistence.
+         * Replaces the entire PostgreSQL/Express backend.
+         */
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    console.error(`Error reading localStorage key “${key}”:`, error);
+                    return initialValue;
+                }
+            });
 
-shared/
-└── schema.ts             # Drizzle ORM schema definitions</pre>
-            </div>
-            
-            <h3 style="margin-top: 20px; color: #333;">Technology Stack</h3>
-            <ul style="margin: 15px 20px; line-height: 1.8;">
-                <li>🚀 <strong>Express.js</strong> - Web framework</li>
-                <li>🐘 <strong>PostgreSQL</strong> - Relational database (Neon)</li>
-                <li>🔌 <strong>Drizzle ORM</strong> - Type-safe database access</li>
-                <li>📝 <strong>Zod</strong> - Runtime validation</li>
-                <li>📦 <strong>tsx</strong> - TypeScript execution</li>
-                <li>🔄 <strong>Neon HTTP</strong> - Serverless PostgreSQL client</li>
-            </ul>
-            
-            <h3 style="margin-top: 20px; color: #333;">Server Highlights</h3>
-            <p style="margin: 15px 20px;">
-                ✅ Full CRUD operations for all resources<br>
-                ✅ Error handling & logging<br>
-                ✅ Type-safe with TypeScript<br>
-                ✅ RESTful API design<br>
-                ✅ Persistent data storage (PostgreSQL)<br>
-                ✅ Fast development with hot reload
-            </p>
-        </div>
-        
-        <!-- SCHEMA TAB -->
-        <div id="schema" class="content">
-            <h2 class="section-title">📋 Database Schema</h2>
-            
-            <h3 style="margin-top: 20px; color: #333;">Schema Definitions (shared/schema.ts)</h3>
-            
-            <div class="code-block">
-                <pre><strong>// Destinations Table</strong>
-export const destinations = pgTable("destinations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  day: text("day").notNull(),
-  type: text("type").notNull(),
-  location: text("location").notNull(),
-  cost: integer("cost").notNull(),
-  description: text("description").notNull(),
-  latitude: real("latitude").notNull(),
-  longitude: real("longitude").notNull(),
-});</pre>
-            </div>
-            
-            <div class="code-block">
-                <pre><strong>// Expenses Table (Persistent Storage)</strong>
-export const expenses = pgTable("expenses", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  type: text("type").notNull(),
-  amount: integer("amount").notNull(),
-  paidBy: text("paidBy").notNull().default("split"),
-  expenseDate: text("expenseDate").notNull(),
-  createdAt: bigint("createdAt", { mode: "number" }).notNull(),
-});</pre>
-            </div>
-            
-            <div class="code-block">
-                <pre><strong>// Messages Table</strong>
-export const messages = pgTable("messages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sender: text("sender").notNull(),
-  text: text("text").notNull(),
-  timestamp: bigint("timestamp", { mode: "number" }).notNull(),
-});</pre>
-            </div>
-            
-            <div class="code-block">
-                <pre><strong>// Photos Table</strong>
-export const photos = pgTable("photos", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  url: text("url").notNull(),
-  caption: text("caption").notNull(),
-  date: integer("date").notNull(),
-  width: integer("width"),
-  height: integer("height"),
-});</pre>
-            </div>
-            
-            <div class="code-block">
-                <pre><strong>// Users Table</strong>
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});</pre>
-            </div>
-            
-            <h3 style="margin-top: 20px; color: #333;">Expense Categories & Colors</h3>
-            <table>
-                <tr>
-                    <th>Category</th>
-                    <th>Color</th>
-                    <th>Use Case</th>
-                </tr>
-                <tr>
-                    <td><strong>travel</strong></td>
-                    <td style="color: #1E40AF;">■</td>
-                    <td>Train, flight, taxi, transportation</td>
-                </tr>
-                <tr>
-                    <td><strong>food</strong></td>
-                    <td style="color: #D97706;">■</td>
-                    <td>Restaurants, cafes, groceries</td>
-                </tr>
-                <tr>
-                    <td><strong>accommodation</strong></td>
-                    <td style="color: #C084FC;">■</td>
-                    <td>Hotel, hostel, stay</td>
-                </tr>
-                <tr>
-                    <td><strong>activities</strong></td>
-                    <td style="color: #EC4899;">■</td>
-                    <td>Trekking, adventure, experiences</td>
-                </tr>
-                <tr>
-                    <td><strong>shopping</strong></td>
-                    <td style="color: #F59E0B;">■</td>
-                    <td>Souvenirs, gifts, purchases</td>
-                </tr>
-                <tr>
-                    <td><strong>miscellaneous</strong></td>
-                    <td style="color: #8B5CF6;">■</td>
-                    <td>Everything else</td>
-                </tr>
-            </table>
-        </div>
-        
-        <!-- API TAB -->
-        <div id="api" class="content">
-            <h2 class="section-title">🔌 API Endpoints</h2>
-            
-            <h3 style="margin-top: 20px; color: #333;">Destination Endpoints</h3>
-            <div class="endpoint">
-                GET /api/destinations
-            </div>
-            <p style="margin: 10px 20px;">Fetch all McLeodganj destinations with filters</p>
-            
-            <div class="endpoint">
-                GET /api/destinations/:id
-            </div>
-            <p style="margin: 10px 20px;">Get a single destination by ID</p>
-            
-            <div class="endpoint">
-                GET /api/visited
-            </div>
-            <p style="margin: 10px 20px;">Get all visited destinations</p>
-            
-            <h3 style="margin-top: 25px; color: #333;">Expense Endpoints</h3>
-            <div class="endpoint">
-                GET /api/expenses
-            </div>
-            <p style="margin: 10px 20px;">Fetch all expenses (persistent storage)</p>
-            
-            <div class="endpoint post">
-                POST /api/expenses
-            </div>
-            <p style="margin: 10px 20px;">Add new expense | Body: { name, type, amount, paidBy, expenseDate }</p>
-            
-            <div class="endpoint put">
-                PUT /api/expenses/:id
-            </div>
-            <p style="margin: 10px 20px;">Update expense | Body: { name?, type?, amount?, paidBy?, expenseDate? }</p>
-            
-            <div class="endpoint delete">
-                DELETE /api/expenses/:id
-            </div>
-            <p style="margin: 10px 20px;">Delete expense by ID</p>
-            
-            <h3 style="margin-top: 25px; color: #333;">Message Endpoints</h3>
-            <div class="endpoint">
-                GET /api/messages
-            </div>
-            <p style="margin: 10px 20px;">Fetch all messages between Reh & Sim</p>
-            
-            <div class="endpoint post">
-                POST /api/messages
-            </div>
-            <p style="margin: 10px 20px;">Send message | Body: { sender, text, timestamp }</p>
-            
-            <div class="endpoint delete">
-                DELETE /api/messages
-            </div>
-            <p style="margin: 10px 20px;">Delete all messages (batch clear)</p>
-            
-            <h3 style="margin-top: 25px; color: #333;">Photo Endpoints</h3>
-            <div class="endpoint">
-                GET /api/photos
-            </div>
-            <p style="margin: 10px 20px;">Fetch all trip photos</p>
-            
-            <div class="endpoint post">
-                POST /api/photos
-            </div>
-            <p style="margin: 10px 20px;">Add photo | Body: { url, caption, date, width?, height? }</p>
-            
-            <div class="endpoint delete">
-                DELETE /api/photos/:id
-            </div>
-            <p style="margin: 10px 20px;">Delete photo by ID</p>
-        </div>
-        
-        <!-- CONFIGURATION TAB -->
-        <div id="config" class="content">
-            <h2 class="section-title">⚙️ Configuration Files</h2>
-            
-            <h3 style="margin-top: 20px; color: #333;">package.json - Key Scripts</h3>
-            <div class="code-block">
-                <pre>{
-  "scripts": {
-    "dev": "NODE_ENV=development tsx server/index-dev.ts",
-    "build": "vite build && esbuild server/index-prod.ts --platform=node",
-    "start": "NODE_ENV=production node dist/index.js",
-    "check": "tsc",
-    "db:push": "drizzle-kit push"
-  }
-}</pre>
-            </div>
-            
-            <h3 style="margin-top: 25px; color: #333;">Environment Variables</h3>
-            <div class="code-block">
-                <pre>DATABASE_URL=postgresql://...          # PostgreSQL connection
-PGHOST=...                              # Database host
-PGPORT=...                              # Database port
-PGUSER=...                              # Database user
-PGPASSWORD=...                          # Database password
-PGDATABASE=...                          # Database name
-SESSION_SECRET=...                      # Session encryption key</pre>
-            </div>
-            
-            <h3 style="margin-top: 25px; color: #333;">drizzle.config.ts</h3>
-            <div class="code-block">
-                <pre>import { defineConfig } from "drizzle-kit";
+            const setValue = (value) => {
+                try {
+                    const valueToStore = value instanceof Function ? value(storedValue) : value;
+                    setStoredValue(valueToStore);
+                    window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                } catch (error) {
+                    console.error(`Error setting localStorage key “${key}”:`, error);
+                }
+            };
+            return [storedValue, setValue];
+        };
 
-export default defineConfig({
-  out: "./migrations",
-  schema: "./shared/schema.ts",
-  dialect: "postgresql",
-  dbCredentials: {
-    url: process.env.DATABASE_URL!,
-  },
-});</pre>
-            </div>
-            
-            <h3 style="margin-top: 25px; color: #333;">tailwind.config.ts</h3>
-            <div class="code-block">
-                <pre>export default {
-  darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,ts,jsx,tsx}"],
-  theme: {
-    extend: {
-      colors: {
-        primary: "hsl(var(--primary) / &lt;alpha-value&gt;)",
-        secondary: "hsl(var(--secondary) / &lt;alpha-value&gt;)",
-        accent: "hsl(var(--accent) / &lt;alpha-value&gt;)",
-      },
-    },
-  },
-  plugins: [require("tailwindcss-animate")],
-};</pre>
-            </div>
-        </div>
+        // --- Minimal Toast/Alert System ---
+        const useToast = () => {
+            const showToast = (options) => {
+                const existingToast = document.getElementById('simple-toast');
+                if (existingToast) {
+                    existingToast.remove();
+                }
+
+                const toast = document.createElement('div');
+                toast.id = 'simple-toast';
+                toast.className = 'fixed top-4 right-4 z-50 p-4 rounded-lg shadow-xl text-sm transition-all duration-300 transform translate-y-0 opacity-100';
+                
+                let bgColor = 'bg-pink-500';
+                let iconHtml = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'; // Default AlertCircle lookalike
+                
+                if (options.title === 'Success!') {
+                    bgColor = 'bg-green-500';
+                    iconHtml = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'; // CheckCircle lookalike
+                }
+
+                toast.classList.add(bgColor, 'text-white');
+                toast.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        ${iconHtml}
+                        <div>
+                            <p class="font-bold">${options.title}</p>
+                            <p>${options.description}</p>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('-translate-y-10', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, options.duration || 3000);
+            };
+
+            return { toast: showToast };
+        };
+
+        // ======================================================================
+        // 2. STYLED COMPONENTS (Minimal Shadcn replacements using Tailwind)
+        // ======================================================================
+
+        const Select = ({ value, onValueChange, children }) => {
+            return (
+                <select 
+                    value={value} 
+                    onChange={(e) => onValueChange(e.target.value)} 
+                    className="flex h-8 w-full items-center justify-between rounded-lg border-2 border-pink-300 bg-white px-3 py-1 text-sm text-black shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                >
+                    {children}
+                </select>
+            );
+        };
+
+        // Dummy components needed for structure but simplified in implementation
+        const SelectTrigger = ({ id, children, className, ...props }) => <div className={className}>{children}</div>;
+        const SelectValue = () => null;
+        const SelectContent = ({ children }) => children;
+        const SelectItem = ({ value, children }) => (
+            <option key={value} value={value}>{children}</option>
+        );
+
+        const Button = ({ onClick, disabled, children, className, ...props }) => (
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                className={`flex items-center justify-center bg-pink-500 text-white hover:bg-pink-600 active:bg-pink-700 transition duration-150 text-xs font-bold h-8 rounded-lg shadow-md disabled:opacity-50 ${className}`}
+                {...props}
+            >
+                {children}
+            </button>
+        );
+
+        const Input = ({ id, type, placeholder, value, onChange, className, ...props }) => (
+            <input
+                id={id}
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                className={`flex h-8 w-full rounded-lg border-2 border-pink-300 bg-white px-3 py-1 text-sm text-black placeholder-black/40 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 ${className}`}
+                {...props}
+            />
+        );
         
-        <!-- STRUCTURE TAB -->
-        <div id="structure" class="content">
-            <h2 class="section-title">📁 Complete Project Structure</h2>
-            
-            <div class="code-block">
-                <pre>mcleodganj-trip-planner/
-├── 📄 package.json
-├── 📄 tsconfig.json
-├── 📄 vite.config.ts
-├── 📄 drizzle.config.ts
-├── 📄 tailwind.config.ts
-├── 📄 index.html
-├── 🎨 design_guidelines.md
-│
-├── 📁 client/
-│   ├── index.html
-│   └── src/
-│       ├── main.tsx
-│       ├── App.tsx
-│       ├── index.css
-│       ├── pages/
-│       │   └── home.tsx
-│       ├── components/
-│       │   ├── DashboardLayout.tsx
-│       │   ├── ExpenseCalculator.tsx
-│       │   ├── ExpenseTracker.tsx
-│       │   ├── MemoriesTimeline.tsx
-│       │   ├── SharedNotes.tsx
-│       │   ├── DailyChecklist.tsx
-│       │   ├── PrivateMessages.tsx
-│       │   ├── RandomizerWheel.tsx
-│       │   ├── LiveTripDashboard.tsx
-│       │   ├── DiaryExport.tsx
-│       │   ├── RatingSystem.tsx
-│       │   └── ui/ (Shadcn components)
-│       ├── lib/
-│       │   ├── queryClient.ts
-│       │   └── localStorage.ts
-│       ├── hooks/
-│       │   └── use-toast.ts
-│       └── contexts/
-│           └── ThemeContext.tsx
-│
-├── 📁 server/
-│   ├── index-dev.ts
-│   ├── index-prod.ts
-│   ├── app.ts
-│   ├── routes.ts
-│   ├── storage.ts
-│   └── db.ts
-│
-├── 📁 shared/
-│   └── schema.ts (Drizzle ORM tables)
-│
-├── 📁 migrations/ (Auto-generated)
-│   └── ...migrations files
-│
-└── 📁 dist/ (Built output)
-    └── ...bundle files</pre>
-            </div>
-            
-            <h2 style="margin-top: 30px;" class="section-title">📊 Statistics</h2>
-            <table>
-                <tr>
-                    <th>Aspect</th>
-                    <th>Count/Details</th>
-                </tr>
-                <tr>
-                    <td><strong>Frontend Components</strong></td>
-                    <td>12 major components + UI library</td>
-                </tr>
-                <tr>
-                    <td><strong>API Endpoints</strong></td>
-                    <td>20+ REST endpoints</td>
-                </tr>
-                <tr>
-                    <td><strong>Database Tables</strong></td>
-                    <td>5 tables (destinations, expenses, messages, photos, users)</td>
-                </tr>
-                <tr>
-                    <td><strong>TypeScript Files</strong></td>
-                    <td>30+ files with full type safety</td>
-                </tr>
-                <tr>
-                    <td><strong>UI Components</strong></td>
-                    <td>25+ Shadcn components</td>
-                </tr>
-                <tr>
-                    <td><strong>Lines of Code</strong></td>
-                    <td>3000+ lines of production code</td>
-                </tr>
-                <tr>
-                    <td><strong>Database Persistence</strong></td>
-                    <td>✅ PostgreSQL + Drizzle ORM</td>
-                </tr>
-            </table>
-            
-            <h2 style="margin-top: 30px;" class="section-title">🚀 Deployment</h2>
-            <div style="margin: 20px; padding: 20px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #2196f3;">
-                <p style="margin: 10px 0;"><strong>Hosted on:</strong> Replit</p>
-                <p style="margin: 10px 0;"><strong>Database:</strong> Neon (PostgreSQL)</p>
-                <p style="margin: 10px 0;"><strong>URL:</strong> Automatically generated Replit domain</p>
-                <p style="margin: 10px 0;"><strong>Auto-deploy:</strong> On every code change</p>
-                <p style="margin: 10px 0;"><strong>Build:</strong> Vite (frontend) + esbuild (backend)</p>
-            </div>
-        </div>
+        const Label = ({ htmlFor, children, className, ...props }) => (
+            <label htmlFor={htmlFor} className={`block text-xs font-bold text-gray-700 mb-1 ${className}`} {...props}>
+                {children}
+            </label>
+        );
         
-        <div class="footer">
-            <p>McLeodganj Trip Planner © 2025 | Built with ❤️ for Reh & Sim</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">All code exported with love. Happy travels! 🌸</p>
-        </div>
-    </div>
-    
-    <script>
-        function showTab(tabName) {
-            // Hide all content
-            const contents = document.querySelectorAll('.content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Remove active class from all tabs
-            const tabs = document.querySelectorAll('.nav-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Show selected content
-            document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
+        const ScrollArea = ({ children, className, ...props }) => (
+            <div className={`overflow-y-auto custom-scroll-area ${className}`} style={{ maxHeight: 'calc(100vh - 100px)' }} {...props}>
+                {children}
+            </div>
+        );
+
+        const Card = ({ children, className, ...props }) => (
+            <div className={`rounded-xl shadow-lg ${className}`} {...props}>
+                {children}
+            </div>
+        );
+
+        const CardContent = ({ children, className, ...props }) => (
+            <div className={`p-4 ${className}`} {...props}>
+                {children}
+            </div>
+        );
+
+        // ======================================================================
+        // 3. MAIN COMPONENT (ExpenseCalculator)
+        // ======================================================================
+
+        const EXPENSE_TYPES = [
+            "travel", "food", "accommodation", "activities", "shopping", "miscellaneous"
+        ];
+
+        const CATEGORY_COLORS = {
+            travel: "#1E40AF",        
+            food: "#D97706",         
+            accommodation: "#C084FC",
+            activities: "#EC4899",   
+            shopping: "#F59E0B",     
+            miscellaneous: "#8B5CF6"
+        };
+
+        const getCategoryColor = (category) => {
+            return CATEGORY_COLORS[category?.toLowerCase()] || "#A78BFA";
+        };
+
+        const ExpenseCalculator = () => {
+            const { toast } = useToast();
+            // Load and persist expenses using LocalStorage
+            const [expenses, setExpenses] = useLocalStorage("mcleodganj_expenses_v1", []);
+
+            const [expenseName, setExpenseName] = useState("");
+            const [expenseType, setExpenseType] = useState("food");
+            const [expenseAmount, setExpenseAmount] = useState("");
+            const [paidBy, setPaidBy] = useState("split");
+            const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split("T")[0]);
+            const [categoryFilter, setCategoryFilter] = useState("all");
+            const [isAdding, setIsAdding] = useState(false);
+
+            const handleAddExpense = () => {
+                if (!expenseName.trim() || !expenseAmount.trim() || !expenseDate.trim()) {
+                    toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" });
+                    return;
+                }
+                const amount = parseFloat(expenseAmount);
+                if (isNaN(amount) || amount <= 0) {
+                    toast({ title: "Error", description: "Please enter a valid amount.", variant: "destructive" });
+                    return;
+                }
+
+                setIsAdding(true);
+
+                const newExpense = {
+                    id: Date.now().toString(), 
+                    name: expenseName,
+                    type: expenseType,
+                    amount: amount,
+                    paidBy: paidBy,
+                    expenseDate: expenseDate,
+                    createdAt: Date.now(),
+                };
+
+                // Update LocalStorage state
+                setExpenses(prevExpenses => [newExpense, ...prevExpenses].sort((a, b) => b.createdAt - a.createdAt));
+
+                // Reset form fields
+                setExpenseName("");
+                setExpenseAmount("");
+                setPaidBy("split");
+                setExpenseDate(new Date().toISOString().split("T")[0]);
+
+                toast({ title: "Success!", description: "Expense added successfully" });
+                
+                setIsAdding(false);
+            };
+
+            const handleDeleteExpense = (id) => {
+                setExpenses(prevExpenses => prevExpenses.filter(e => e.id !== id));
+                toast({ title: "Removed", description: "Expense deleted." });
+            };
+
+            const filteredExpenses = useMemo(() => {
+                return categoryFilter === "all" ? 
+                    expenses : 
+                    expenses.filter((e) => e.type === categoryFilter);
+            }, [expenses, categoryFilter]);
+
+            const totalExpense = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+            const categoryTotals = useMemo(() => {
+                return EXPENSE_TYPES.map((type) => {
+                    const total = expenses.filter((e) => e.type?.toLowerCase() === type?.toLowerCase()).reduce((sum, e) => sum + e.amount, 0);
+                    const displayName = type.charAt(0).toUpperCase() + type.slice(1);
+                    return { name: displayName, value: total, category: type, color: getCategoryColor(type) };
+                }).filter((item) => item.value > 0);
+            }, [expenses]);
+
+            const chartData = categoryTotals.length > 0 ? categoryTotals : [{ name: "No Expenses", value: 0, color: "#9CA3AF" }];
+
+            return (
+                <div className="flex flex-col gap-3 bg-white rounded-2xl border-2 border-pink-200 p-4 shadow-xl h-full">
+                    <div className="flex items-center gap-2 mb-2 flex-shrink-0">
+                        {DollarSign && <DollarSign className="w-6 h-6 text-pink-500" />}
+                        <h3 className="text-xl font-extrabold text-gray-900">Trip Expenses</h3>
+                    </div>
+
+                    <ScrollArea className="flex-1 pb-4">
+                        {/* Expense Input Form */}
+                        <div className="bg-gradient-to-br from-white to-pink-50/50 p-4 rounded-xl border-2 border-pink-200 space-y-3">
+                            <div>
+                                <Label htmlFor="paid-by">Expense By</Label>
+                                <Select value={paidBy} onValueChange={setPaidBy}>
+                                    <SelectItem value="reh">Reh</SelectItem>
+                                    <SelectItem value="sim">Sim</SelectItem>
+                                    <SelectItem value="split">Split</SelectItem>
+                                </Select>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="expense-date">Date</Label>
+                                <Input id="expense-date" type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="expense-name">Expense Name</Label>
+                                <Input id="expense-name" placeholder="e.g., Hotel Night" value={expenseName} onChange={(e) => setExpenseName(e.target.value)} />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="expense-type">Type</Label>
+                                <Select value={expenseType} onValueChange={setExpenseType}>
+                                    {EXPENSE_TYPES.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                        </SelectItem>
+                                    ))}
+                                </Select>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="expense-amount">Amount (INR)</Label>
+                                <Input id="expense-amount" type="number" placeholder="0" value={expenseAmount} onChange={(e) => setExpenseAmount(e.target.value)} />
+                            </div>
+
+                            <Button onClick={handleAddExpense} disabled={isAdding} className="w-full">
+                                {Plus && <Plus className="w-4 h-4 mr-1" />}
+                                {isAdding ? "Adding..." : "Add Expense"}
+                            </Button>
+                        </div>
+
+                        {/* Filter and Total Summary */}
+                        <div className="mt-4">
+                            <Label className="text-sm font-bold text-gray-700 mb-2 block">Filter by Category</Label>
+                            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                <SelectItem value="all">All Categories</SelectItem>
+                                {EXPENSE_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                                    </SelectItem>
+                                ))}
+                            </Select>
+                        </div>
+
+                        <Card className="mt-4 border-2 border-pink-300 bg-gradient-to-br from-white to-pink-50/60">
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500">Total Spent</p>
+                                    <p className="text-4xl font-extrabold text-pink-600">₹{totalExpense.toLocaleString()}</p>
+                                </div>
+                                {TrendingUp && <TrendingUp className="w-10 h-10 text-pink-500/70" />}
+                            </CardContent>
+                        </Card>
+
+                        {/* Recent Expenses List */}
+                        {filteredExpenses.length > 0 && (
+                            <div className="mt-4">
+                                <p className="text-sm font-bold text-gray-700 mb-2">Recent Expenses</p>
+                                <div className="space-y-2 bg-pink-50/50 rounded-xl p-3 border-2 border-pink-200">
+                                    {filteredExpenses.map((expense) => (
+                                        <div key={expense.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-pink-100 shadow-sm text-sm">
+                                            <div className="flex-1">
+                                                <p className="font-bold text-gray-800">{expense.name}</p>
+                                                <p className="text-gray-500 text-xs font-medium">{expense.type} • {(expense.paidBy || "split").charAt(0).toUpperCase() + (expense.paidBy || "split").slice(1)} • {new Date(expense.expenseDate).toLocaleDateString()}</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-bold text-lg text-pink-600">₹{expense.amount}</span>
+                                                <button onClick={() => handleDeleteExpense(expense.id)} className="p-1 text-red-400 hover:text-red-600 transition">
+                                                    {Trash2 && <Trash2 className="w-4 h-4" />}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Expense Breakdown Charts */}
+                        {categoryTotals.length > 0 && (
+                            <div className="space-y-4 mt-4">
+                                <p className="text-sm font-bold text-gray-700">Expense Breakdown</p>
+
+                                {/* Bar Chart */}
+                                <Card className="border-2 border-pink-200 p-4">
+                                    <ResponsiveContainer width="100%" height={150}>
+                                        <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0e2e8" />
+                                            <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#333" }} />
+                                            <YAxis tick={{ fontSize: 10, fill: "#333" }} />
+                                            <Tooltip formatter={(value, name) => [`₹${value.toLocaleString()}`, name]} contentStyle={{ backgroundColor: "#fff", border: "1px solid #EC699C", borderRadius: '8px', padding: '10px' }} />
+                                            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                                {chartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </Card>
+
+                                {/* Pie Chart */}
+                                <Card className="border-2 border-pink-200 p-4">
+                                    <ResponsiveContainer width="100%" height={200}>
+                                        <PieChart>
+                                            <Pie 
+                                                data={chartData} 
+                                                cx="50%" 
+                                                cy="50%" 
+                                                innerRadius={40} 
+                                                outerRadius={70} 
+                                                fill="#8884d8" 
+                                                paddingAngle={2} 
+                                                dataKey="value"
+                                                labelLine={false} 
+                                                label={({ name, percent }) => percent > 0.05 ? `${name}` : ''}
+                                            >
+                                                {chartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip formatter={(value, name) => [`₹${value.toLocaleString()}`, name]} contentStyle={{ backgroundColor: "#fff", border: "1px solid #EC699C", borderRadius: '8px', padding: '10px' }} />
+                                            <Legend layout="horizontal" align="center" verticalAlign="bottom" wrapperStyle={{ padding: '10px' }} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </Card>
+                            </div>
+                        )}
+                    </ScrollArea>
+                </div>
+            );
+        };
+        
+        // ======================================================================
+        // 4. APP INITIALIZATION
+        // ======================================================================
+
+        const App = () => {
+            return (
+                <div className="min-h-screen p-4 bg-gray-50">
+                    <ExpenseCalculator />
+                </div>
+            )
         }
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+
+    </script>
+    <!-- FIX 4: Re-include the Lucide module load script outside the main Babel block -->
+    <!-- This ensures the window.Lucide object is created correctly for the script above. -->
+    <script type="module">
+        import {
+            DollarSign,
+            TrendingUp,
+            Plus,
+            Trash2,
+            X,
+            AlertCircle,
+            CheckCircle 
+        } from 'https://unpkg.com/lucide-react@0.417.0/dist/lucide-react.js';
+        window.Lucide = {
+            DollarSign,
+            TrendingUp,
+            Plus,
+            Trash2,
+            X,
+            AlertCircle,
+            CheckCircle
+        };
     </script>
 </body>
 </html>
